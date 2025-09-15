@@ -26,27 +26,34 @@ def test_gif_files():
     return True
 
 def test_total_calculation():
-    """Test total result calculation logic"""
-    print("\n🧮 Testing total result calculation...")
+    """Test total result extraction logic"""
+    print("\n🧮 Testing total result extraction...")
     
-    # Test data
+    # Test data - last item is the total
     test_results = [
         {"Subject": "Math", "Result": "85"},
         {"Subject": "English", "Result": "78"},
         {"Subject": "Science", "Result": "92"},
-        {"Subject": "History", "Result": "88"}
+        {"Subject": "History", "Result": "88"},
+        {"Subject": "Total", "Result": "343"}  # Last item is the total
     ]
     
-    total = 0
-    for result in test_results:
-        grade = result.get('Result', 'N/A')
+    # Get total from last item (as per API response structure)
+    if test_results:
+        last_result = test_results[-1]
+        total_grade = last_result.get('Result', 'N/A')
+        
         try:
-            if isinstance(grade, str) and grade.replace('.', '').isdigit():
-                total += float(grade)
+            if isinstance(total_grade, str) and total_grade.replace('.', '').isdigit():
+                total = float(total_grade)
+            else:
+                total = 0
         except (ValueError, TypeError):
-            pass
+            total = 0
+    else:
+        total = 0
     
-    print(f"📊 Test total: {total}")
+    print(f"📊 Test total (from last item): {total}")
     
     if total > 300:
         print("🎉 Would send celebration GIF (passed)")

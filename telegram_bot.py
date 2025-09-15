@@ -252,7 +252,7 @@ Now please send me your **first name** exactly as it appears on your exam regist
         
         await update.message.reply_text(student_info, parse_mode='Markdown')
         
-        # Calculate total result and send subject results
+        # Display subject results and get total from last item
         total_result = 0
         if results:
             results_text = "📊 *SUBJECT RESULTS*\n\n"
@@ -260,18 +260,23 @@ Now please send me your **first name** exactly as it appears on your exam regist
                 subject = result.get('Subject', 'N/A')
                 grade = result.get('Result', 'N/A')
                 results_text += f"📖 **{subject}:** {grade}\n"
-                
-                # Try to convert grade to number for total calculation
-                try:
-                    if isinstance(grade, (int, float)):
-                        total_result += grade
-                    elif isinstance(grade, str) and grade.replace('.', '').isdigit():
-                        total_result += float(grade)
-                except (ValueError, TypeError):
-                    # If grade can't be converted to number, skip it
-                    pass
             
-            results_text += f"\n🎯 **Total Result:** {total_result}"
+            # Get total result from the last item in the array
+            if results:
+                last_result = results[-1]
+                total_grade = last_result.get('Result', 'N/A')
+                
+                # Try to convert the last result to number for comparison
+                try:
+                    if isinstance(total_grade, (int, float)):
+                        total_result = total_grade
+                    elif isinstance(total_grade, str) and total_grade.replace('.', '').isdigit():
+                        total_result = float(total_grade)
+                except (ValueError, TypeError):
+                    total_result = 0
+                
+                results_text += f"\n🎯 **Total Result:** {total_grade}"
+            
             await update.message.reply_text(results_text, parse_mode='Markdown')
         else:
             await update.message.reply_text("📊 *No subject results found.*", parse_mode='Markdown')

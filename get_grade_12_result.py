@@ -148,7 +148,7 @@ def main():
         if data:
             display_results(data)
             print("\n" + "="*50)
-            print("Results retrieved successfully!")
+            print("Results retrieved!")
         else:
             print("\n" + "="*50)
             print("Failed to retrieve results after multiple attempts.")
