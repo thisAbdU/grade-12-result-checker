@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grade 12 Results Checker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+        }
+        
+        .title {
+            color: #333;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        
+        .subtitle {
+            color: #666;
+            font-size: 1.2em;
+            margin-bottom: 40px;
+        }
+        
+        .input-group {
+            margin-bottom: 30px;
+            text-align: left;
+        }
+        
+        .input-label {
+            display: block;
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .input-field {
+            width: 100%;
+            padding: 20px;
+            font-size: 1.2em;
+            border: 3px solid #ddd;
+            border-radius: 10px;
+            transition: border-color 0.3s;
+        }
+        
+        .input-field:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 10px rgba(102, 126, 234, 0.3);
+        }
+        
+        .check-button {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            border: none;
+            padding: 25px 50px;
+            font-size: 1.5em;
+            font-weight: bold;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            width: 100%;
+            margin-top: 20px;
+        }
+        
+        .check-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        
+        .check-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .loading {
+            display: none;
+            margin-top: 20px;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .loading-text {
+            font-size: 1.2em;
+            color: #666;
+        }
+        
+        .result-container {
+            display: none;
+            margin-top: 30px;
+            text-align: left;
+        }
+        
+        .result-title {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .result-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .result-section h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+        
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .result-item:last-child {
+            border-bottom: none;
+        }
+        
+        .result-label {
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .result-value {
+            color: #666;
+        }
+        
+        .error-message {
+            background: #ffebee;
+            color: #c62828;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            font-size: 1.1em;
+            display: none;
+        }
+        
+        .success-message {
+            background: #e8f5e8;
+            color: #2e7d32;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            font-size: 1.1em;
+            display: none;
+        }
+        
+        .emoji {
+            font-size: 1.5em;
+            margin-right: 10px;
+        }
+        
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+            
+            .title {
+                font-size: 2em;
+            }
+            
+            .input-field {
+                padding: 15px;
+                font-size: 1.1em;
+            }
+            
+            .check-button {
+                padding: 20px;
+                font-size: 1.3em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">📚 Grade 12 Results</h1>
+        <p class="subtitle">Check your Ethiopian Grade 12 examination results</p>
+        
+        <form id="resultForm">
+            <div class="input-group">
+                <label class="input-label" for="admissionNo">
+                    <span class="emoji">🎓</span>Admission Number
+                </label>
+                <input type="text" id="admissionNo" class="input-field" placeholder="Enter your admission number" required>
+            </div>
+            
+            <div class="input-group">
+                <label class="input-label" for="firstName">
+                    <span class="emoji">👤</span>First Name
+                </label>
+                <input type="text" id="firstName" class="input-field" placeholder="Enter your first name" required>
+            </div>
+            
+            <button type="submit" class="check-button" id="checkButton">
+                <span class="emoji">🔍</span>Check My Results
+            </button>
+        </form>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p class="loading-text">Checking your results... Please wait</p>
+        </div>
+        
+        <div class="error-message" id="errorMessage"></div>
+        <div class="success-message" id="successMessage"></div>
+        
+        <div class="result-container" id="resultContainer">
+            <h2 class="result-title">📊 Your Results</h2>
+            
+            <div class="result-section">
+                <h3>👨‍🎓 Student Information</h3>
+                <div id="studentInfo"></div>
+            </div>
+            
+            <div class="result-section">
+                <h3>📈 Subject Results</h3>
+                <div id="subjectResults"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('resultForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const admissionNo = document.getElementById('admissionNo').value.trim();
+            const firstName = document.getElementById('firstName').value.trim();
+            const checkButton = document.getElementById('checkButton');
+            const loading = document.getElementById('loading');
+            const errorMessage = document.getElementById('errorMessage');
+            const successMessage = document.getElementById('successMessage');
+            const resultContainer = document.getElementById('resultContainer');
+            
+            // Clear previous results
+            errorMessage.style.display = 'none';
+            successMessage.style.display = 'none';
+            resultContainer.style.display = 'none';
+            
+            // Show loading
+            checkButton.disabled = true;
+            loading.style.display = 'block';
+            
+            try {
+                const response = await fetch('/check_results', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        admissionNo: admissionNo,
+                        firstName: firstName
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    displayResults(data.data);
+                    successMessage.textContent = '✅ Results found successfully!';
+                    successMessage.style.display = 'block';
+                } else {
+                    errorMessage.textContent = data.error || '❌ Failed to retrieve results. Please try again.';
+                    errorMessage.style.display = 'block';
+                }
+            } catch (error) {
+                errorMessage.textContent = '❌ Network error. Please check your connection and try again.';
+                errorMessage.style.display = 'block';
+            } finally {
+                checkButton.disabled = false;
+                loading.style.display = 'none';
+            }
+        });
+        
+        function displayResults(data) {
+            const studentInfo = document.getElementById('studentInfo');
+            const subjectResults = document.getElementById('subjectResults');
+            const resultContainer = document.getElementById('resultContainer');
+            
+            // Display student information
+            const student = data.studentInfo || {};
+            studentInfo.innerHTML = `
+                <div class="result-item">
+                    <span class="result-label">Full Name:</span>
+                    <span class="result-value">${student.FullName || 'N/A'}</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Admission Number:</span>
+                    <span class="result-value">${student.Admission_No || 'N/A'}</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Gender:</span>
+                    <span class="result-value">${student.Sex || 'N/A'}</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">School:</span>
+                    <span class="result-value">${student.School || 'N/A'}</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Stream:</span>
+                    <span class="result-value">${student.Stream || 'N/A'}</span>
+                </div>
+            `;
+            
+            // Display subject results
+            const results = data.results || [];
+            if (results.length > 0) {
+                subjectResults.innerHTML = results.map(result => `
+                    <div class="result-item">
+                        <span class="result-label">${result.Subject || 'N/A'}:</span>
+                        <span class="result-value">${result.Result || 'N/A'}</span>
+                    </div>
+                `).join('');
+            } else {
+                subjectResults.innerHTML = '<div class="result-item"><span class="result-value">No results found</span></div>';
+            }
+            
+            resultContainer.style.display = 'block';
+        }
+    </script>
+</body>
+</html>
