@@ -163,6 +163,10 @@ bot_token.txt
 config.json
 secrets.json
 
+# Keep assets folder and GIFs
+!assets/
+!assets/*.gif
+
 # Railway specific
 .railway/
 

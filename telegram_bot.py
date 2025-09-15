@@ -252,17 +252,32 @@ Now please send me your **first name** exactly as it appears on your exam regist
         
         await update.message.reply_text(student_info, parse_mode='Markdown')
         
-        # Subject results
+        # Calculate total result and send subject results
+        total_result = 0
         if results:
             results_text = "📊 *SUBJECT RESULTS*\n\n"
             for result in results:
                 subject = result.get('Subject', 'N/A')
                 grade = result.get('Result', 'N/A')
                 results_text += f"📖 **{subject}:** {grade}\n"
+                
+                # Try to convert grade to number for total calculation
+                try:
+                    if isinstance(grade, (int, float)):
+                        total_result += grade
+                    elif isinstance(grade, str) and grade.replace('.', '').isdigit():
+                        total_result += float(grade)
+                except (ValueError, TypeError):
+                    # If grade can't be converted to number, skip it
+                    pass
             
+            results_text += f"\n🎯 **Total Result:** {total_result}"
             await update.message.reply_text(results_text, parse_mode='Markdown')
         else:
             await update.message.reply_text("📊 *No subject results found.*", parse_mode='Markdown')
+        
+        # Send appropriate GIF based on total result
+        await self.send_result_gif(update, total_result)
         
         # Success message with options
         keyboard = [
@@ -273,11 +288,62 @@ Now please send me your **first name** exactly as it appears on your exam regist
         
         await update.message.reply_text(
             "✅ *Results retrieved successfully!*\n\n"
-            "🎉 Congratulations on completing your Grade 12 examinations!\n\n"
             "Need to check another result? Use the button below:",
             parse_mode='Markdown',
             reply_markup=reply_markup
         )
+    
+    async def send_result_gif(self, update: Update, total_result: float) -> None:
+        """Send appropriate GIF based on total result"""
+        try:
+            if total_result > 300:
+                # Send celebration GIF for passing
+                gif_path = "assets/tom-and-jerry-throwing-flowers-celebration-dance.gif"
+                message = "🎉 *Congratulations! You passed!* 🎉\n\nYour hard work paid off!"
+                
+                with open(gif_path, 'rb') as gif_file:
+                    await update.message.reply_animation(
+                        animation=gif_file,
+                        caption=message,
+                        parse_mode='Markdown'
+                    )
+            else:
+                # Send sad GIF for not passing
+                gif_path = "assets/sushichaeng-tom-and-jerry.gif"
+                message = "😔 *You didn't pass this time*\n\nDon't give up! You can try again next time. Keep studying and you'll succeed! 💪"
+                
+                with open(gif_path, 'rb') as gif_file:
+                    await update.message.reply_animation(
+                        animation=gif_file,
+                        caption=message,
+                        parse_mode='Markdown'
+                    )
+        except FileNotFoundError as e:
+            logger.error(f"GIF file not found: {e}")
+            # Fallback message if GIF files are not found
+            if total_result > 300:
+                await update.message.reply_text(
+                    "🎉 *Congratulations! You passed!* 🎉\n\nYour hard work paid off!",
+                    parse_mode='Markdown'
+                )
+            else:
+                await update.message.reply_text(
+                    "😔 *You didn't pass this time*\n\nDon't give up! You can try again next time. Keep studying and you'll succeed! 💪",
+                    parse_mode='Markdown'
+                )
+        except Exception as e:
+            logger.error(f"Error sending GIF: {e}")
+            # Fallback message if there's any error
+            if total_result > 300:
+                await update.message.reply_text(
+                    "🎉 *Congratulations! You passed!* 🎉\n\nYour hard work paid off!",
+                    parse_mode='Markdown'
+                )
+            else:
+                await update.message.reply_text(
+                    "😔 *You didn't pass this time*\n\nDon't give up! You can try again next time. Keep studying and you'll succeed! 💪",
+                    parse_mode='Markdown'
+                )
     
     async def help_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         """Send help information"""
