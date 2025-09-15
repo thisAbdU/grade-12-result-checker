@@ -7,6 +7,7 @@ This version includes a simple web server for health checks
 import os
 import asyncio
 import logging
+import threading
 from telegram_bot import Grade12ResultBot
 
 # Enable logging
@@ -38,29 +39,33 @@ async def health_check():
     logger.info(f"Health check server started on port {port}")
     return runner
 
-async def main():
-    """Main function to run both web server and bot"""
-    # Start health check server
-    web_runner = await health_check()
-    
-    # Start the bot
+def run_bot():
+    """Run the Telegram bot in a separate thread"""
     bot_token = os.getenv('TELEGRAM_BOT_TOKEN')
     
     if not bot_token:
         logger.error("TELEGRAM_BOT_TOKEN environment variable not set!")
         return
     
+    logger.info("Starting Telegram bot...")
     bot = Grade12ResultBot(bot_token)
+    bot.run()
+
+async def main():
+    """Main function to run both web server and bot"""
+    logger.info("Starting Grade 12 Results Bot with health check...")
+    
+    # Start health check server
+    web_runner = await health_check()
+    
+    # Start bot in a separate thread
+    bot_thread = threading.Thread(target=run_bot, daemon=True)
+    bot_thread.start()
     
     try:
-        # Start bot in background
-        bot_task = asyncio.create_task(
-            asyncio.get_event_loop().run_in_executor(None, bot.run)
-        )
-        
-        # Wait for both tasks
-        await asyncio.gather(web_runner.cleanup(), bot_task)
-        
+        # Keep the web server running
+        while True:
+            await asyncio.sleep(1)
     except KeyboardInterrupt:
         logger.info("Shutting down...")
         await web_runner.cleanup()
